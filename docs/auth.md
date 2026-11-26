@@ -124,11 +124,36 @@ All software developed by the Societal Analytics Lab follows these rules, to ens
 | Same origin | The server and web client are always hosted on the same domain. |
 | Server-side OIDC flow | The server initiates and completes the OIDC flow with the trusted provider (`OIDC_HOST`), and sets a signed, http-only session cookie. |
 | Scopes | The server requests the scopes `openid email`, nothing more. It uses `sub`, `email`, `email_verified`, the 2FA signal and `auth_time`, and no name, so users aren't asked to share more than needed. |
-| One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-providers.md#one-client-per-host)). The second login completes without user interaction, because the user is already signed in at the provider. Logging out is per application. |
+| One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-providers.md#one-client-per-host)). The second login completes without user interaction, while the user is still signed in at the provider. |
+| Own session, sign-out | The application's session is independent of the provider's session: 30 minutes idle, 12 hours at most, configurable. Signing out ends it and the provider's session, and the server accepts back-channel logout (see [Sessions and signing out](#sessions-and-signing-out)). |
 | Authorization on the server | The server decides what users may do, not the OIDC provider (see [Authorization](#authorization)). |
 | API keys for other clients | Other clients (e.g. R or Python) can only access the backend via [API keys](#api-keys). |
 | Email verification | The server checks the `email_verified` claim, unless `AUTH_INSECURE_DISABLE_EMAIL_VERIFICATION` is set (see [Weaker security](#weaker-security-teaching-and-low-sensitivity-servers)). |
 | 2FA and step-up | The server checks `OIDC_MFA_CLAIM` and `auth_time` for sensitive actions, and performs step-up authentication if needed (see [Two-factor authentication](#two-factor-authentication-2fa)). `AUTH_INSECURE_DISABLE_2FA` drops the `OIDC_MFA_CLAIM` check, not the step-up. |
+
+## Sessions and signing out
+
+There are three kinds of session, and keeping them apart is what makes signing in and out behave as users expect:
+
+1. **The provider's session** (in Keycloak: the user session): the browser's login at the provider. While it lasts, every application of the realm can sign the user in **without a password**. That is useful for single sign-on (from AmCAT to AnnoTinder in one click), and a risk on a shared computer: someone who signed in to one application and only closed it leaves a login behind for all of them. So our provider keeps it short: 10 minutes without activity, at most 30 minutes.
+2. **The provider's client sessions:** one per application, inside the provider's session. Ordinary refresh tokens belong to them, so they stop working when the provider's session ends, including when the user signs out in *any* application.
+3. **The application's own session:** its session cookie.
+
+**The rule: an application's session must not depend on the provider's session.** Otherwise one application's sign-out, or a short provider session, would end every application's session in the middle of someone's work. So an application either:
+
+* **keeps its own session after the login** (our software: the server uses OIDC once to sign the user in, and needs no refresh token), or
+* **requests `offline_access`**: a refresh token that is independent of the provider's session (it survives a sign-out elsewhere). Tools that keep users signed in with refresh tokens (e.g. oauth2-proxy, by adding `offline_access` to its scopes) do it this way. In our Keycloak, a client gets it only when it asks, with the session limits of its client settings.
+
+**How long a session lasts:** an idle timeout and an absolute timeout ([OWASP, Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)), with the numbers of [NIST SP 800-63B](https://pages.nist.gov/800-63-3/sp800-63b.html) for logins with a second factor: **30 minutes without activity, 12 hours at most**. Both are settings (`SESSION_IDLE`, `SESSION_MAX`, in seconds). An application whose use requires more may set more, and documents why: e.g. a notebook server that computes for hours while the user does nothing.
+
+**Signing out** in an application:
+
+1. ends the application's own session;
+2. sends the browser to the provider's end-session endpoint, with the ID token of the login (`id_token_hint`, so the server keeps the ID token with the session) and a `post_logout_redirect_uri`. This ends the provider's session, so the next visit to any application asks for the password again.
+
+**Back-channel logout:** the server has an endpoint where the provider reports that a user signed out (an [OIDC back-channel logout](https://openid.net/specs/openid-connect-backchannel-1_0.html) token, matched on its `sid`, or its `sub`), and ends the matching sessions. Together with the sign-out above, signing out in one application signs the user out of all of them, which is what users expect from one account.
+
+The [lab portal](https://github.com/vu-societal-analytics/deploy-lab-portal) does all of this, and is a short example to follow.
 
 ## Authorization
 

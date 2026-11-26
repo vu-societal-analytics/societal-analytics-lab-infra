@@ -54,6 +54,7 @@ services:
     mfa: required                # only with a second factor
     max_upload: 2.5GB
     timeout: 3000s
+    # session_idle: 8h           # own session limits instead of 30m / 12h, e.g. for a notebook server
 ```
 
 ## Whisper

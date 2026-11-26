@@ -125,7 +125,7 @@ All software developed by the Societal Analytics Lab follows these rules, to ens
 | Server-side OIDC flow | The server initiates and completes the OIDC flow with the trusted provider (`OIDC_HOST`), and sets a signed, http-only session cookie. |
 | Scopes | The server requests the scopes `openid email`, nothing more. It uses `sub`, `email`, `email_verified`, the 2FA signal and `auth_time`, and no name, so users aren't asked to share more than needed. |
 | One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-providers.md#one-client-per-host)). The second login completes without user interaction, while the user is still signed in at the provider. |
-| Own session, sign-out | The application's session is independent of the provider's session: 30 minutes idle, 12 hours at most, configurable. Signing out ends it and the provider's session, and the server accepts back-channel logout (see [Sessions and signing out](#sessions-and-signing-out)). |
+| Own session, sign-out | The application's session is independent of the provider's session: 30 minutes idle, 12 hours at most, configurable. Signing out ends it and the provider's session (see [Sessions and signing out](#sessions-and-signing-out)). |
 | Authorization on the server | The server decides what users may do, not the OIDC provider (see [Authorization](#authorization)). |
 | API keys for other clients | Other clients (e.g. R or Python) can only access the backend via [API keys](#api-keys). |
 | Email verification | The server checks the `email_verified` claim, unless `AUTH_INSECURE_DISABLE_EMAIL_VERIFICATION` is set (see [Weaker security](#weaker-security-teaching-and-low-sensitivity-servers)). |
@@ -151,7 +151,9 @@ There are three kinds of session, and keeping them apart is what makes signing i
 1. ends the application's own session;
 2. sends the browser to the provider's end-session endpoint, with the ID token of the login (`id_token_hint`, so the server keeps the ID token with the session) and a `post_logout_redirect_uri`. This ends the provider's session, so the next visit to any application asks for the password again.
 
-**Back-channel logout:** the server has an endpoint where the provider reports that a user signed out (an [OIDC back-channel logout](https://openid.net/specs/openid-connect-backchannel-1_0.html) token, matched on its `sid`, or its `sub`), and ends the matching sessions. Together with the sign-out above, signing out in one application signs the user out of all of them, which is what users expect from one account.
+**Other applications are not affected** by a sign-out: their own sessions continue. Applications don't depend on each other's sign-out, and OIDC's back-channel logout (the provider telling every application to end its session) is not used: it would make them dependent again.
+
+**Locking someone out** (e.g. a compromised account): block them in the applications themselves (e.g. remove their role), and disable them at the provider, so they can't sign in again anywhere. Revoking their offline sessions at the provider ends the sessions of tools that use `offline_access`.
 
 The [lab portal](https://github.com/vu-societal-analytics/deploy-lab-portal) does all of this, and is a short example to follow.
 

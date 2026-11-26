@@ -17,15 +17,16 @@ The [privacy statement](policies/privacy.md) and the [acceptable use policy](pol
 
 ## Keycloak
 
-The login service, at `auth.societal-analytics.nl`: Keycloak with PostgreSQL, its own Caddy, and an email relay. Repository: [deploy-keycloak](https://github.com/vu-societal-analytics/deploy-keycloak). It builds its two images on the server (Keycloak prepared for a quick start, and Caddy with a rate limit module), so the repository is cloned rather than downloaded:
+The login service, at `auth.societal-analytics.nl`: Keycloak with PostgreSQL, its own Caddy, and an email relay. Repository: [deploy-keycloak](https://github.com/vu-societal-analytics/deploy-keycloak), which is **private**: it holds the login flows and settings of every realm, the most sensitive part of our setup. The server reads it with a read-only deploy key, and builds its two images itself (Keycloak prepared for a quick start, and Caddy with a rate limit module):
 
 ```bash
-sudo git clone https://github.com/vu-societal-analytics/deploy-keycloak.git /opt/keycloak && cd /opt/keycloak
+# after adding the server's deploy key to the repository (INSTALL.md, "Files and settings")
+sudo -u keycloak git clone ssh://git@ssh.github.com:443/vu-societal-analytics/deploy-keycloak.git /opt/keycloak && cd /opt/keycloak
 sudo -u keycloak cp .env.example .env && sudo -u keycloak chmod 600 .env      # then fill it in
 sudo docker compose up -d --build
 ```
 
-Everything else (the admin hostname and its IP restriction, the realms, upgrades, recovery): [INSTALL.md](https://github.com/vu-societal-analytics/deploy-keycloak/blob/main/INSTALL.md). The Keycloak folder is owned by its own system account `keycloak`, not by `sal`.
+Everything else (the admin hostname and its IP restriction, the realms, upgrades, recovery) is in the repository's INSTALL.md. The Keycloak folder is owned by its own system account `keycloak`, not by `sal`.
 
 ## Lab portal
 

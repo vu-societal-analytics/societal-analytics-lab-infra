@@ -46,6 +46,10 @@ So that members sign in once, and signing out ends it everywhere. The login cook
 
 Our deployments are open source, like the rest of our software. GitHub Actions builds them from the repository and publishes them in the GitHub Container Registry (`ghcr.io`), so a server only downloads an image, and anyone can check what it contains. (Keycloak is the exception: its two images are thin layers on the official ones, built on the server in seconds.)
 
+## Why is the Keycloak repository private?
+
+It holds the login flows and settings of every realm, which nobody outside the lab reviews. A mistake in them would be easy to spot for anyone reading the files, including automated scans. Our other repositories hold general-purpose code; our settings for them stay on the servers.
+
 ## Why is this documentation so short?
 
 It describes what we do, for people who know how to run a server. The earlier, step-by-step version is in the [archive](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/tree/main/docs/archive).

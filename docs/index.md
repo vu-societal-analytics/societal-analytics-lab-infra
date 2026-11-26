@@ -16,7 +16,7 @@ How the Societal Analytics Lab (VU Amsterdam) hosts its tools: the login service
 * **Only HTTPS is public.** Each server has one reverse proxy (Caddy) in front of its apps; apps only listen on the server itself.
 * **One login service,** Keycloak at `auth.societal-analytics.nl`, for everything that needs a login. Apps without a login of their own sit behind the [lab portal](apps.md#lab-portal).
 * **Backups:** every server backs up `/opt` every night, encrypted, with the database dumps the apps make themselves. VU IT's server backups are the last resort.
-* **Everything is open source,** our deployments included: [github.com/vu-societal-analytics](https://github.com/vu-societal-analytics).
+* **Everything we make is open source,** our deployments included: [github.com/vu-societal-analytics](https://github.com/vu-societal-analytics). The exception is our Keycloak configuration, the most sensitive part: its repository is private.
 
 ## Open points
 

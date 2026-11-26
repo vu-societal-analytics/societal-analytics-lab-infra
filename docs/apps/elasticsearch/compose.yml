@@ -1,0 +1,41 @@
+# Elasticsearch on the database server, for the apps on other servers (a draft: not yet in use).
+# How we run it: https://vu-societal-analytics.github.io/societal-analytics-lab-infra/apps/#elasticsearch
+# Settings and secrets in .env (from .env.example). The host needs vm.max_map_count=1048576
+# (sysctl), and ./backups owned by user 1000 (Elasticsearch writes its snapshots there).
+name: elasticsearch
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: 10m, max-file: "3" }
+
+services:
+  elasticsearch:
+    image: elasticsearch:9.4.6
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      discovery.type: single-node
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}
+      xpack.security.enabled: "true"
+      # TODO: TLS between the servers (now: only on the internal network)
+      xpack.security.http.ssl.enabled: "false"
+      # Snapshots (the backups) go to ./backups: see the apps page for the snapshot schedule
+      path.repo: /backups
+      ES_JAVA_OPTS: -Xms${ES_HEAP:-4g} -Xmx${ES_HEAP:-4g}
+    ports:
+      # Only on the server's internal address: never on all addresses (Docker bypasses the firewall)
+      - "${BIND_ADDRESS:?set BIND_ADDRESS (the internal address of this server) in .env}:9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - ./backups:/backups
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 65535, hard: 65535 }
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsu elastic:$$ELASTIC_PASSWORD http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      retries: 20
+
+volumes:
+  es-data:

@@ -1,9 +1,9 @@
 # OIDC provider comparison
 
 !!! info "Evaluation"
-    This page is the evaluation behind our choice of Keycloak (November 2026): the comparison, the hands-on test checklist, and what we found. The decision and its reasons are on the [Decisions](./decisions.md#keycloak) page. Some use cases below were dropped later: a shared provider for other teams' servers (use case 3, now the lab's own `idp`), and client registration by others (use cases 2 and 6).
+    This page is the evaluation behind our choice of Keycloak (November 2026): the comparison, the hands-on test checklist, and what we found. The decision and its reasons are on the [Decisions](decisions.md#keycloak) page. Some use cases below were dropped later: a shared provider for other teams' servers (use case 3, now the lab's own `idp`), and client registration by others (use cases 2 and 6).
 
-It is only about the provider that the lab runs itself: our software works with any provider that meets the [provider requirements](./auth.md#oidc-provider-requirements).
+It is only about the provider that the lab runs itself: our software works with any provider that meets the [provider requirements](../auth.md#oidc-provider-requirements).
 
 ## What we need
 
@@ -15,18 +15,18 @@ It is only about the provider that the lab runs itself: our software works with 
 | 2 | **Easy client registration** | Users who host our software can register their server themselves, and get a client ID, client secret and redirect URI configuration. |
 | 3 | **Identity provider** | One shared pool of users, with one account for all servers that use our provider. We control everything: users can't manage other users or add login methods. |
 | 4 | **Isolated OIDC providers** | Power users (e.g. a research group) get their own pool of users, and fully manage it themselves: users, login methods, 2FA settings and account recovery. |
-| 5 | **Migration** | Teams can move to another OIDC provider later (see the [Migration guide](./auth-migration.md)). |
+| 5 | **Migration** | Teams can move to another OIDC provider later (see the [Migration guide](../auth-migration.md)). |
 | 6 | **Self-registration** | Users (not power users) can create an account themselves. Client registration starts with limits (e.g. a maximum number of clients) that we can increase. |
 | 7 | **Consent and SSO** | Single sign-on across all servers, but users consent once per host before a server receives their data. AmCAT and AnnoTinder on the same host count as one host, so one consent covers both. |
 
 ### Requirements
 
-These follow from the use cases and the [Authentication standard](./auth.md).
+These follow from the use cases and the [Authentication standard](../auth.md).
 
 * **Consent screen.** When other people register clients, the provider must ask users before sharing their data with a client they haven't used before. Without consent, any registered client receives the name and email address of a signed-in user, without the user being asked. That is acceptable only when we register every client ourselves.
 * **Tenant isolation.** For use cases 1 and 4, users in one pool must not be able to sign in to (or be signed in to) clients of another pool, and this must be enforced by the provider, not by the configuration of each client.
 * **Self-service client registration with limits,** ideally via the standard ([OAuth 2.0 Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591), DCR), so that our registration page or tooling stays small.
-* **The [provider requirements](./auth.md#oidc-provider-requirements) of our standard:** `email_verified`, a 2FA signal (`amr` or `acr`), and step-up (`max_age`, `auth_time`). Ideally also the option to *request* 2FA (`acr_values`), so that users without a second factor are asked to set one up.
+* **The [provider requirements](../auth.md#oidc-provider-requirements) of our standard:** `email_verified`, a 2FA signal (`amr` or `acr`), and step-up (`max_age`, `auth_time`). Ideally also the option to *request* 2FA (`acr_values`), so that users without a second factor are asked to set one up.
 * **Little maintenance,** and an active project with a clear future.
 
 ## Comparison
@@ -40,7 +40,7 @@ These follow from the use cases and the [Authentication standard](./auth.md).
 | **5. Migration** | ✅ Standard OIDC, and realm export/import **including users, user IDs and password hashes**. A team moving to its own Keycloak keeps the same user IDs (only `iss` changes). | ✅ Standard OIDC. ==To verify:== whether a user export includes user IDs and password hashes. | ✅ Standard OIDC. |
 | **6. Self-registration** | ✅ Self-registration per realm. Client limits via initial access tokens, or our registration page. | ✅ Enrollment flows with policies. Client limits via DCR policies or our registration page. | ✅ Self-registration. Client limits via our registration page. |
 | **7. Consent and SSO** | ✅ SSO within a realm. Consent is stored per client, so one client per host gives one consent per host (see [One client per host](#one-client-per-host)). | ✅ SSO within an installation. Consent is stored per application (optionally with an expiry), so the same approach works. | ❌ SSO, but no consent. |
-| **Requesting 2FA (`acr_values`)** | ✅ Levels of authentication, mapped to authentication flows. | ❌ `acr` is fixed, so 2FA must be part of the login flow (see [Provider support](./auth-2fa.md#provider-support-for-mfa-signals)). | ❌ Not natively ([discussion](https://github.com/zitadel/zitadel/discussions/5083)). |
+| **Requesting 2FA (`acr_values`)** | ✅ Levels of authentication, mapped to authentication flows. | ❌ `acr` is fixed, so 2FA must be part of the login flow (see [Provider support](auth-2fa.md#provider-support-for-mfa-signals)). | ❌ Not natively ([discussion](https://github.com/zitadel/zitadel/discussions/5083)). |
 | **`amr`, `max_age`, `auth_time`** | ✅ With the AMR protocol mapper. | ✅ `amr` contains `mfa` after an MFA stage. `max_age=0` is [ignored](https://github.com/goauthentik/authentik/issues/27483); positive values (our default is 600) work. | ✅ `amr` and `auth_time`. ==To verify:== `max_age`. |
 | **Deployment** | One container plus PostgreSQL, behind our reverse proxy. Large admin console with many options. | Server and worker containers plus PostgreSQL. | API and login containers plus PostgreSQL. |
 
@@ -56,12 +56,12 @@ These follow from the use cases and the [Authentication standard](./auth.md).
 
 ### Keycloak
 
-The most complete fit for our use cases, and the most battle-tested. Its main cost is complexity: Keycloak has many settings, and a misconfiguration is a bigger risk than the code itself. We manage that by keeping the realm configuration in files in this repository, which Keycloak imports itself (see [step 7 of the installation guide](./install/keycloak.md#7-realms)), so that it is reviewable and reproducible.
+The most complete fit for our use cases, and the most battle-tested. Its main cost is complexity: Keycloak has many settings, and a misconfiguration is a bigger risk than the code itself. We manage that by keeping the realm configuration in files in this repository, which Keycloak imports itself (see [step 7 of the installation guide](install/keycloak.md#7-realms)), so that it is reviewable and reproducible.
 
 * **Realms** give us strong isolation on one server: a realm for the shared pool, a realm for the lab, and a realm per power user.
 * **Consent** is stored per client. The consent screen is skipped only when the user already approved everything the client asks for.
 * **Client registration policies** can force consent for every self-registered client, so a registered client can't skip it.
-* **Step-up:** levels of authentication (`acr`) can require 2FA on request. Our servers must still check the returned `acr` themselves, because providers don't always enforce what was requested (see CVE-2026-97176 in [Provider support](./auth-2fa.md#provider-support-for-mfa-signals)).
+* **Step-up:** levels of authentication (`acr`) can require 2FA on request. Our servers must still check the returned `acr` themselves, because providers don't always enforce what was requested (see CVE-2026-97176 in [Provider support](auth-2fa.md#provider-support-for-mfa-signals)).
 * **Deployment:** one container and PostgreSQL. `start-dev` is for local testing only; production needs `start` with a database, hostname and reverse proxy settings (see the [production](https://www.keycloak.org/server/configuration-production), [reverse proxy](https://www.keycloak.org/server/reverseproxy) and [hostname](https://www.keycloak.org/server/hostname) guides).
 
 ### Authentik
@@ -89,7 +89,7 @@ AmCAT and AnnoTinder hosted together on the same host can use **the same client 
 * Tokens have the same audience for both applications. This is not a problem, because our applications use their own session cookies and don't accept each other's tokens.
 * A client has one back-channel logout URL. Our applications don't use back-channel logout; if that changes, each application needs its own client again.
 
-The [Authentication standard](./auth.md#for-developers) describes this as an option.
+The [Authentication standard](../auth.md#for-developers) describes this as an option.
 
 ## Keycloak test checklist
 
@@ -117,7 +117,7 @@ To be done on a test machine, before migrating anything. Mark items as done, and
 - [ ] Trusted hosts or redirect URI restrictions work as expected.
 - [ ] ==To verify:== whether a policy exists that keeps new clients disabled until an admin enables them.
 
-Instead of DCR, apps were first registered through our own app registration site, which used the admin API with narrow rights. Since `idp` is only for the lab's own servers, our admins create the clients, and a client policy turns on consent and PKCE and refuses unsafe redirect URIs (tested, see [step 8 of the installation guide](./install/keycloak.md#8-clients-for-our-deployments)). The DCR items above are therefore no longer needed.
+Instead of DCR, apps were first registered through our own app registration site, which used the admin API with narrow rights. Since `idp` is only for the lab's own servers, our admins create the clients, and a client policy turns on consent and PKCE and refuses unsafe redirect URIs (tested, see [step 8 of the installation guide](install/keycloak.md#8-clients-for-our-deployments)). The DCR items above are therefore no longer needed.
 
 **Users and 2FA**
 
@@ -134,7 +134,7 @@ Instead of DCR, apps were first registered through our own app registration site
 
 **Isolation (use cases 1 and 4)**
 
-- [x] A second realm with a delegated realm admin. That admin can't see or change anything in other realms (tested, see [step 4 of the installation guide](./install/keycloak.md#exceptions-for-specific-realms)).
+- [x] A second realm with a delegated realm admin. That admin can't see or change anything in other realms (tested, see [step 4 of the installation guide](install/keycloak.md#exceptions-for-specific-realms)).
 - [ ] A user signed in to one realm is not signed in to another realm.
 
 **Migration (use case 5)**
@@ -143,8 +143,8 @@ Instead of DCR, apps were first registered through our own app registration site
 
 **Operations**
 
-- [x] Production setup with `start`, PostgreSQL and our reverse proxy (hostname and proxy headers): see the [Keycloak installation guide](./install/keycloak.md).
-- [x] Realms set up from files with Keycloak's own import (see [step 7 of the installation guide](./install/keycloak.md#7-realms)).
+- [x] Production setup with `start`, PostgreSQL and our reverse proxy (hostname and proxy headers): see the [Keycloak installation guide](install/keycloak.md).
+- [x] Realms set up from files with Keycloak's own import (see [step 7 of the installation guide](install/keycloak.md#7-realms)).
 - [ ] Upgrade from one 26.x release to the next.
 - [x] Backups of the database, and a restore test.
 - [ ] oauth2-proxy in front of a service without its own login (the AuthWall).

@@ -1,6 +1,6 @@
 # Lab server
 
-A physical server on VU premises that hosts the lab's services for its members, such as transcription (Whisper) and language models (Ollama). Every service has an address under `lab.societal-analytics.nl`, and `lab.societal-analytics.nl` itself is the lab portal: the login, an overview of the services, and lab membership. Which services run here: [Hosted services](./services.md).
+A physical server on VU premises that hosts the lab's services for its members, such as transcription (Whisper) and language models (Ollama). Every service has an address under `lab.societal-analytics.nl`, and `lab.societal-analytics.nl` itself is the lab portal: the login, an overview of the services, and lab membership. Which services run here: [Hosted services](services.md).
 
 ## Map
 
@@ -27,7 +27,7 @@ flowchart LR
 ```
 
 * **Caddy** is the only thing reachable from outside. It handles HTTPS (certificates from Let's Encrypt), and sends every request to the right service.
-* **The lab portal** (`lab.societal-analytics.nl`) is the lab login. Members sign in there with their account in the `lab` realm of [Keycloak](./keycloak.md) (a password and a second factor), and see the services they can use. After that login, the portal's cookie (🍪) works for every address under `lab.`.
+* **The lab portal** (`lab.societal-analytics.nl`) is the lab login. Members sign in there with their account in the `lab` realm of [Keycloak](keycloak.md) (a password and a second factor), and see the services they can use. After that login, the portal's cookie (🍪) works for every address under `lab.`.
 * **Services without their own login** sit behind the portal: for every request, Caddy asks the portal whether this person may use the service. Visitors who aren't signed in are sent to the login first.
 * **Lab membership:** a Keycloak account alone isn't enough. People request membership in the portal; a lab admin approves it there, and gets an email about new requests. Admins can also add and remove members directly.
 * **Services with their own login** (e.g. a chat interface for the language models) are reached directly through Caddy, and log users in through Keycloak's `lab` realm themselves.

@@ -2,9 +2,9 @@
 
 How authentication works in all software developed by the Societal Analytics Lab (AmCAT, AnnoTinder): what the software does, and what it requires from the OIDC provider. It is written for developers of our software. Teams that host the software only need parts of it; these pages link to those:
 
-* [Authentication provider](./auth-install.md): for teams that host our software.
-* [Migration guide](./auth-migration.md): moving to a different OIDC provider.
-* [Decisions](./decisions.md): why it is set up this way, and which alternatives we dropped.
+* [Authentication provider](auth-install.md): for teams that host our software.
+* [Migration guide](auth-migration.md): moving to a different OIDC provider.
+* [Decisions](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/decisions.md): why it is set up this way, and which alternatives we dropped.
 
 ## OpenID Connect (OIDC)
 
@@ -16,13 +16,13 @@ Our software works with any OIDC provider that meets the [provider requirements]
 
 ## Choosing an OIDC provider
 
-The person hosting our software chooses the OIDC provider (see [Authentication provider](./auth-install.md)):
+The person hosting our software chooses the OIDC provider (see [Authentication provider](auth-install.md)):
 
 * **Your institution's identity provider** (recommended, and the right choice for sensitive research data): managed by a security team, with a helpdesk for account recovery.
-* **Another provider that meets the requirements,** hosted (e.g. ZITADEL Cloud) or self-hosted (e.g. Keycloak). The lab runs its own Keycloak for its own servers; its documentation ([Keycloak VM](./servers/keycloak.md)) can serve as an example.
+* **Another provider that meets the requirements,** hosted (e.g. ZITADEL Cloud) or self-hosted (e.g. Keycloak). The lab runs its own Keycloak for its own servers; its documentation ([Keycloak](apps.md#keycloak)) can serve as an example.
 * **For teaching and other servers without sensitive data:** a provider that doesn't meet all requirements, with the [weaker security settings](#weaker-security-teaching-and-low-sensitivity-servers) turned on.
 
-Names and email addresses of users (e.g. students) are personal data, so any server must be used according to your institution's rules. Moving to another provider is a [migration](./auth-migration.md). For development on a local machine there is a separate [development mode](#development-mode).
+Names and email addresses of users (e.g. students) are personal data, so any server must be used according to your institution's rules. Moving to another provider is a [migration](auth-migration.md). For development on a local machine there is a separate [development mode](#development-mode).
 
 ## OIDC provider requirements
 
@@ -31,7 +31,7 @@ By default, the provider must meet all three requirements. The first two can be 
 | Requirement | What the provider must do |
 | --- | --- |
 | **Email verification** | Return `"email_verified": true` in the ID token. Our software uses email addresses to assign roles (see [Authorization](#authorization)). |
-| **2FA with a usable signal** | Support 2FA, and signal in the ID token that it was used. Providers do this differently (`amr` containing `mfa`, or a specific `acr` value), so the claim is configured with `OIDC_MFA_CLAIM`. See [Provider support for MFA signals](./auth-2fa.md#provider-support-for-mfa-signals). |
+| **2FA with a usable signal** | Support 2FA, and signal in the ID token that it was used. Providers do this differently (`amr` containing `mfa`, or a specific `acr` value), so the claim is configured with `OIDC_MFA_CLAIM`. See [Provider support for MFA signals](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-2fa.md#provider-support-for-mfa-signals). |
 | **Step-up** | Honour the `max_age` parameter (re-authenticate if the last login is older than N seconds), and return `auth_time` in the ID token. This one can't be turned off. |
 
 ## Configuration
@@ -45,7 +45,7 @@ By default, the provider must meet all three requirements. The first two can be 
 | `OIDC_CLIENT_SECRET` | yes | Client secret registered at the provider. |
 | `OIDC_MFA_CLAIM` | no | Which claim counts as 2FA: `amr:mfa` (default) or `acr:<value>`, e.g. `acr:http://test.surfconext.nl/assurance/loa2` for SURFconext. |
 | `AUTH_STEP_UP_MAX_AGE` | no | Maximum age in seconds of the last 2FA login for sensitive actions. Default: 600. |
-| `OIDC_PREVIOUS_HOST`, `OIDC_PREVIOUS_CLIENT_ID`, `OIDC_PREVIOUS_CLIENT_SECRET`, `OIDC_PREVIOUS_MFA_CLAIM` | no | The previous OIDC provider, only during a [migration](./auth-migration.md#account-linking). |
+| `OIDC_PREVIOUS_HOST`, `OIDC_PREVIOUS_CLIENT_ID`, `OIDC_PREVIOUS_CLIENT_SECRET`, `OIDC_PREVIOUS_MFA_CLAIM` | no | The previous OIDC provider, only during a [migration](auth-migration.md#account-linking). |
 | `OIDC_PREVIOUS_UNTIL` | no | Date after which the previous provider is no longer accepted. |
 | `AUTH_DEV_MODE` | no | Enables [development mode](#development-mode). Refused unless the server only listens on localhost. |
 | `AUTH_INSECURE_DISABLE_2FA` | no | `true` turns off the 2FA requirement (see [Weaker security](#weaker-security-teaching-and-low-sensitivity-servers)). |
@@ -124,7 +124,7 @@ All software developed by the Societal Analytics Lab follows these rules, to ens
 | Same origin | The server and web client are always hosted on the same domain. |
 | Server-side OIDC flow | The server initiates and completes the OIDC flow with the trusted provider (`OIDC_HOST`), and sets a signed, http-only session cookie. |
 | Scopes | The server requests the scopes `openid email`, nothing more. It uses `sub`, `email`, `email_verified`, the 2FA signal and `auth_time`, and no name, so users aren't asked to share more than needed. |
-| One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](./auth-providers.md#one-client-per-host)). The second login completes without user interaction, because the user is already signed in at the provider. Logging out is per application. |
+| One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-providers.md#one-client-per-host)). The second login completes without user interaction, because the user is already signed in at the provider. Logging out is per application. |
 | Authorization on the server | The server decides what users may do, not the OIDC provider (see [Authorization](#authorization)). |
 | API keys for other clients | Other clients (e.g. R or Python) can only access the backend via [API keys](#api-keys). |
 | Email verification | The server checks the `email_verified` claim, unless `AUTH_INSECURE_DISABLE_EMAIL_VERIFICATION` is set (see [Weaker security](#weaker-security-teaching-and-low-sensitivity-servers)). |
@@ -176,7 +176,7 @@ Any user that signs in is registered, optionally with a form that collects addit
 | `linked_at` | When the identity was linked to the user. |
 | `last_login_at` | When the user last signed in with this identity. |
 
-Normally a user has one identity. A user can have more than one during a [migration](./auth-migration.md#account-linking) to a new OIDC provider.
+Normally a user has one identity. A user can have more than one during a [migration](auth-migration.md#account-linking) to a new OIDC provider.
 
 ### JIT account claiming
 

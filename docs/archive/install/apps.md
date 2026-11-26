@@ -131,7 +131,7 @@ cd /opt/<app> && sudo docker compose pull && sudo docker compose up -d
 
 For our own code: `sudo -u sal git -C /opt/<app>/src pull`, then `sudo docker compose up -d --build`.
 
-**Removing** (this deletes its data, so check first that it is no longer needed, following the retention rules of the [privacy statement](../policies/privacy.md)):
+**Removing** (this deletes its data, so check first that it is no longer needed, following the retention rules of the [privacy statement](../../policies/privacy.md)):
 
 ```bash
 cd /opt/<app> && sudo docker compose down -v

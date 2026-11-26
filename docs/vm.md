@@ -1,9 +1,9 @@
-# Installation: university VMs
+# University VMs (SciCloud)
 
-How to set up a virtual machine (VM) on VU SciCloud, the VU's research cloud, and secure it before hosting anything on it. This applies to the [Keycloak VM](../servers/keycloak.md) and the [service VMs](../servers/service-vms.md). SciCloud is documented by VU Research Data Management ([SciCloud](https://rdm.vu.nl/tools/scicloud/), [logging in](https://rdm.vu.nl/tools/ada/login.html)).
+How to set up a virtual machine (VM) on VU SciCloud, the VU's research cloud, and secure it before hosting anything on it. We use them for the Keycloak, AmCAT and AnnoTinder servers ([Our servers](servers.md)). SciCloud is documented by VU Research Data Management ([SciCloud](https://rdm.vu.nl/tools/scicloud/), [logging in](https://rdm.vu.nl/tools/ada/login.html)).
 
 !!! tip "Steps 3 to 5 in one script"
-    After creating the VM and logging in as `root` (steps 1 and 2), [`setup-vm.sh`](setup-vm.sh) does steps 3 to 5: your admin user with your SSH keys, the firewall rules, automatic security updates and Docker, and the system account `sal` for the apps. It can safely run again. Download it, read it, and run it:
+    After creating the VM and logging in as `root` (steps 1 and 2), [`setup-vm.sh`](install/setup-vm.sh) does steps 3 to 5: your admin user with your SSH keys, the firewall rules, automatic security updates and Docker, and the system account `sal` for the apps. It can safely run again. Download it, read it, and run it:
 
     ```bash
     cd /tmp && curl -fsSLO https://vu-societal-analytics.github.io/societal-analytics-lab-infra/install/setup-vm.sh
@@ -17,7 +17,7 @@ How to set up a virtual machine (VM) on VU SciCloud, the VU's research cloud, an
     bash setup-vm.sh <username> --web --ssh-from <VU range 1>,<VU range 2>
     ```
 
-    `--web` opens ports 80 and 443 (for a VM that hosts a website or service); `--ssh-from <range>,<range>` allows SSH only from those ranges, e.g. the VU network ([SSH only from the VU network](#ssh-only-from-the-vu-network)), after checking that your own connection comes from one of them; `--caddy` also installs Caddy on the VM itself (for service VMs, not for the Keycloak VM). At the end, it asks you to check in a second terminal that you can log in as your new user and use `sudo`. Only then, turn off root and password logins:
+    `--web` opens ports 80 and 443 (for a VM that hosts a website or service); `--ssh-from <range>,<range>` allows SSH only from those ranges, e.g. the VU network ([SSH only from the VU network](#ssh-only-from-the-vu-network)), after checking that your own connection comes from one of them. At the end, it asks you to check in a second terminal that you can log in as your new user and use `sudo`. Only then, turn off root and password logins:
 
     ```bash
     sudo bash /tmp/setup-vm.sh --harden-ssh
@@ -146,9 +146,9 @@ The file contains VU-specific rules (e.g. access to university services). Leave 
 
 ### SSH only from the VU network
 
-On an **(extern)** VM, SSH is reachable from the whole internet: anyone can try to log in, or try a flaw in SSH itself. Keys-only logins (step 3) make guessing useless, but SSH still runs code for every connection, before any login. So allow SSH only from the VU network (campus and VPN, which includes the VU SSH gateway), and keep ports 80 and 443 open to everyone. (More options for later: [Hardening plan](../hardening.md#further-options-if-needed).)
+On an **(extern)** VM, SSH is reachable from the whole internet: anyone can try to log in, or try a flaw in SSH itself. Keys-only logins (step 3) make guessing useless, but SSH still runs code for every connection, before any login. So allow SSH only from the VU network (campus and VPN, which includes the VU SSH gateway), and keep ports 80 and 443 open to everyone. (More options for later: [Hardening plan](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/hardening.md#further-options-if-needed).)
 
-**Your VU ranges:** the address ranges of the VU network and VPN, as found for the admin restriction of Keycloak ([Find your IP ranges](keycloak.md#find-your-ip-ranges)). Like the rest of the firewall file, they stay on the VM, not in this documentation.
+**Your VU ranges:** the address ranges of the VU network and VPN, as found for the admin restriction of Keycloak ([Find your IP ranges](https://github.com/vu-societal-analytics/deploy-keycloak/blob/main/INSTALL.md#find-your-ip-ranges)). Like the rest of the firewall file, they stay on the VM, not in this documentation.
 
 **Replace the general SSH rule.** Find it under `# Services to the world`: a rule with `--dport 22` and without `-s`, e.g. `-A INBOUND -p tcp --dport 22 -j ACCEPT`. Remove it, and add one rule per VU range in its place:
 
@@ -184,7 +184,7 @@ These rules apply to programs running **on the VM itself** (e.g. `apt`, `git`, `
 
 ## Docker and the VM firewall
 
-The `INBOUND` and `OUTBOUND` rules above don't apply to Docker containers: see [Docker warnings](docker.md).
+The `INBOUND` and `OUTBOUND` rules above don't apply to Docker containers: see [Docker Compose](docker.md#pitfalls).
 
 **Reloading the firewall while Docker runs.** Check that `sudo iptables-custom` doesn't remove Docker's own rules. With a container running that publishes ports, the following should show rules for those ports, both before and after `sudo iptables-custom`:
 
@@ -220,11 +220,11 @@ Some updates (e.g. a new kernel) need a reboot. Ubuntu shows `*** System restart
 sudo docker compose version
 ```
 
-Run Docker with `sudo`, and don't add users to the `docker` group: it is effectively root access (see [Docker warnings](docker.md#the-docker-group-is-root-access)).
+Run Docker with `sudo`, and don't add users to the `docker` group: it is effectively root access (see [Docker Compose](docker.md#pitfalls)).
 
-## 6. Installing apps
+## 6. Apps
 
-Install apps as described in [Apps on our servers](apps.md): the system account `sal`, every app in `/opt/<app>`, and where its data goes. Install Caddy from [its official apt repository](https://caddyserver.com/docs/install), not Ubuntu's own `caddy` package, which is too old.
+The rest is the same on every server: [Setting up a server](server-setup.md#apps-in-opt).
 
 ## Persistence
 
@@ -246,4 +246,4 @@ Persistence is a property of images, and determines what happens to them when an
 **What "Instantiate as persistent" does:** it first makes a copy of the template with persistent copies of its images, and then creates an instance from that copy. If the instance is ever terminated, you can recover it: go to **Templates → VMs**, find the template with the same name as the instance, and use **Instantiate** (not *Instantiate as persistent*).
 
 !!! warning "Persistence is not a backup"
-    A persistent image survives a terminated VM, but not a broken disk, a deleted image, or a mistake on the VM itself. Servers with data still need backups ([Backups](backups.md)).
+    A persistent image survives a terminated VM, but not a broken disk, a deleted image, or a mistake on the VM itself. Servers with data still need backups ([Backups](https://github.com/vu-societal-analytics/deploy-backup/blob/main/README.md)).

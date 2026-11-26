@@ -57,7 +57,7 @@ AmCAT and AnnoTinder store data that users upload to research projects. That dat
 
 ## Login service
 
-The lab runs its own login service ([Keycloak](../servers/keycloak.md)) for the services above: one realm for the lab's infrastructure (lab members and collaborators), and one for the lab's AmCAT and AnnoTinder servers (anyone can create an account there; each server decides who gets access). For accounts at this service:
+The lab runs its own login service ([Keycloak](../apps.md#keycloak)) for the services above: one realm for the lab's infrastructure (lab members and collaborators), and one for the lab's AmCAT and AnnoTinder servers (anyone can create an account there; each server decides who gets access). For accounts at this service:
 
 * The lab processes account data (name, email address, login and 2FA settings, security logs) to provide the login service.
 * Before one of our servers receives your name and email address, you are asked to consent. You can see and withdraw these consents in your account settings.
@@ -81,7 +81,7 @@ We do not sell personal data, and do not share it for advertising. ==TODO: confi
 | Account data | As long as the account is active, and ==TODO: period== after the last login |
 | Security logs | ==TODO: period (e.g. 6 or 12 months)== |
 | Research data | As agreed with the research project |
-| Whisper and Ollama inputs and outputs | Deleted automatically after the period in [Hosted services](../servers/services.md) (==TODO: the periods==), and not in the lab's own backups |
+| Whisper and Ollama inputs and outputs | Deleted automatically after the period in [Apps](../apps.md) (==TODO: the periods==), and not in the lab's own backups |
 | Backups | The lab's own encrypted backups: up to 6 months, so data deleted from a service can remain there until they expire; data with a short retention (e.g. uploaded audio and transcripts) is not in them. The server backups of VU IT: ==TODO: their retention period==. |
 
 ## Security

@@ -34,7 +34,7 @@ Browser session authentication is managed by an OIDC provider capable of handlin
 The OIDC provider only does authentication: letting users securely prove to AmCAT that they own an email address.
 
 For University hosted AmCAT servers we recommend the institution's own identity provider.
-See the [Authentication standard](./auth.md) for the requirements, and [Authentication provider](./auth-install.md) for teams that host AmCAT themselves.
+See the [Authentication standard](auth.md) for the requirements, and [Authentication provider](auth-install.md) for teams that host AmCAT themselves.
 
 ```mermaid
 graph TD
@@ -77,7 +77,7 @@ graph TD
 | **Exposure Method** | Caddy Proxy (HTTPS) |
 | **Authentication** | External OIDC (Delegated): the `idp` realm of the lab's Keycloak |
 | **Authorization** | FastAPI backend controls all DB access |
-| **2FA Status** | **Required for sensitive actions** (step-up, see the [Authentication standard](./auth.md#two-factor-authentication-2fa)) |
+| **2FA Status** | **Required for sensitive actions** (step-up, see the [Authentication standard](auth.md#two-factor-authentication-2fa)) |
 | **Storage** | ElasticSearch + S3 |
 | **Backup** | Daily snapshot to University NAS |
 

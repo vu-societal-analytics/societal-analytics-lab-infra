@@ -6,7 +6,7 @@ The most sensitive machine is the [Keycloak VM](servers/keycloak.md): whoever co
 
 ## Where we stand
 
-* **SSH** to the VMs: keys only, no `root` logins ([University VMs](install/vm.md#3-secure-ssh-logins)).
+* **SSH** to the VMs: keys only, no `root` logins ([University VMs](../vm.md#3-secure-ssh-logins)).
 * **Keycloak's admin consoles:** on a separate admin hostname, reachable only from VU IP ranges (campus and VPN); administrators need a password and a second factor (an authenticator app, a passkey or a security key).
 * **Everything else public** is behind Caddy, with only HTTPS open.
 
@@ -21,7 +21,7 @@ What remains, from most to least serious:
 
 ### 1. SSH only from the VU network
 
-Allow SSH on every server only from the VU network (campus and VPN, which includes the VU SSH gateway), and keep ports 80 and 443 open to everyone. One firewall change per server: [SSH only from the VU network](install/vm.md#ssh-only-from-the-vu-network), or `setup-vm.sh --ssh-from` for new VMs. This is now the default for new VMs.
+Allow SSH on every server only from the VU network (campus and VPN, which includes the VU SSH gateway), and keep ports 80 and 443 open to everyone. One firewall change per server: [SSH only from the VU network](../vm.md#ssh-only-from-the-vu-network), or `setup-vm.sh --ssh-from` for new VMs. This is now the default for new VMs.
 
 ==TODO: apply on the Keycloak VM; check the other VMs, and the lab server (a physical server with a firewall of its own).==
 
@@ -56,7 +56,7 @@ The console in the SciCloud portal stays the way back in when both keys are lost
 A barrier in front of the admin console is there because of possible flaws in Keycloak. The most direct defense against those is installing security updates quickly:
 
 * **Follow Keycloak's security announcements** (the [Keycloak blog](https://www.keycloak.org/blog), and the releases on GitHub, which can send notifications), and apply a security release within days, following [Upgrading Keycloak](install/keycloak.md#10-maintenance).
-* **The same for the rest of the VM:** the operating system updates itself ([University VMs](install/vm.md#5-updates-and-docker)); Caddy and PostgreSQL follow their releases.
+* **The same for the rest of the VM:** the operating system updates itself ([University VMs](../vm.md#5-updates-and-docker)); Caddy and PostgreSQL follow their releases.
 
 ==TODO: who follows the announcements, and who updates.==
 
@@ -114,4 +114,4 @@ Whatever is chosen: **never put private keys on a jump host or VPN server,** and
 * Which address ranges are the VU network and VPN (for the SSH and admin restrictions)?
 * What availability does SciCloud offer (support, failures, backups)? And could the lab's login service run on a VM managed by VU IT instead, and who could reach its console there?
 
-These go together with the open questions about backups ([Open points](index.md#open-points)).
+These go together with the open questions about backups ([Open points](overview.md#open-points)).

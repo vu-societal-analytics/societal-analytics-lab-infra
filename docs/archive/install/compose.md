@@ -203,6 +203,6 @@ volumes:
 
 * **Only the folder for uploads and results:** never a folder that also holds settings or a database. How to find out what an app writes where: [Sorting an app's data](apps.md#sorting-an-apps-data).
 * **`-mtime +30`** counts from the last change of a file: a file that is only read now and then is still deleted on time.
-* **The app's own retention setting** is better, if it has one: the app then also cleans up its own records. Record which applies in [Hosted services](../servers/services.md), which is also where the retention policy is documented for IT and the [privacy statement](../policies/privacy.md).
+* **The app's own retention setting** is better, if it has one: the app then also cleans up its own records. Record which applies in [Hosted services](../servers/services.md), which is also where the retention policy is documented for IT and the [privacy statement](../../policies/privacy.md).
 * **The server backups of VU IT** do contain these volumes, for as long as IT keeps its backups. ==TODO: ask VU IT how long that is.==
 * **Test the retention with a short period** first: e.g. `-mmin +10` instead of `-mtime +30`, and check after a quarter of an hour that old files are gone and the app still works.

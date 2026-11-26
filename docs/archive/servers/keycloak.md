@@ -39,7 +39,7 @@ A realm in Keycloak is a separate login: its own users, apps, settings and admin
 | Realm | For | Login | Who can join |
 | --- | --- | --- | --- |
 | **master** | Administering Keycloak itself | Password and a mandatory second factor | Only the administrators |
-| **lab** | The lab's own infrastructure: the [lab portal](./lab.md) on the lab server | Password and a mandatory second factor | Lab members and invited collaborators, added by the lab's admins (and approved as members in the lab portal) |
+| **lab** | The lab's own infrastructure: the [lab portal](lab.md) on the lab server | Password and a mandatory second factor | Lab members and invited collaborators, added by the lab's admins (and approved as members in the lab portal) |
 | **idp** | The lab's servers for researchers, such as AmCAT and AnnoTinder | Password, Google or GitHub; second factor optional, but required by our servers for sensitive actions | Anyone (an account gives no access by itself) |
 
 * **master** has no email and no external logins, so admin access never depends on an inbox or someone's Google account. Lost access is recovered via the server itself.
@@ -59,7 +59,7 @@ The realms are set up from realm files in the repository [deploy-keycloak](https
 | **First time, or forgot password** | Not possible (no email): another admin, or the VM | Email link, the second factor (if any), a new password, and in | Same as lab |
 | **Lost second factor** | Recovery code, another admin, or the VM | Recovery code, or a lab admin | Recovery code, or one of our admins |
 
-In all realms, the email address is the username. A second factor is an authenticator app (one-time codes, OTP), a passkey or security key, or a recovery code. Tokens contain `amr`: `pwd` for a password, `mfa` for a second factor. Servers that run our software check `mfa` for sensitive actions (see [Two-factor authentication](../auth.md#two-factor-authentication-2fa)).
+In all realms, the email address is the username. A second factor is an authenticator app (one-time codes, OTP), a passkey or security key, or a recovery code. Tokens contain `amr`: `pwd` for a password, `mfa` for a second factor. Servers that run our software check `mfa` for sensitive actions (see [Two-factor authentication](../../auth.md#two-factor-authentication-2fa)).
 
 **Why:**
 
@@ -86,10 +86,10 @@ The flows behind these steps: [`realms/README.md`](https://github.com/vu-societa
 
 `idp` is the central login of the lab's own servers: our AmCAT and AnnoTinder servers, and other tools later. Users have one account for all of them.
 
-* **Anyone can create an account,** with an email address, or with Google or GitHub. An account gives no access by itself: each server decides what a user may do, with roles given to an email address or a user (see [Authorization](../auth.md#authorization)). So students and collaborators sign up themselves when a project gives them access, instead of waiting for an admin.
+* **Anyone can create an account,** with an email address, or with Google or GitHub. An account gives no access by itself: each server decides what a user may do, with roles given to an email address or a user (see [Authorization](../../auth.md#authorization)). So students and collaborators sign up themselves when a project gives them access, instead of waiting for an admin.
 * **Only the lab's admins add servers** (clients), in the admin console ([step 8 of the installation guide](../install/keycloak.md#8-clients-for-our-deployments)). A client policy turns on consent and PKCE, and refuses unsafe redirect URIs, so a client can't be created with a mistake. Users always see a consent screen with the server's name before it gets their name and email address.
 * **Servers get only what they need:** the email address (and whether it is verified), whether the user signed in with 2FA, and the login time; the name only if the server asks for it (the scope `profile`, which our own software doesn't request). No roles. The consent screen says exactly that, in plain words: *"This app will be able to: see your email address; see whether you signed in with two-factor authentication"*, plus *"see your name"* for a server that asks for it.
-* **Not a service for others.** Teams that host our software themselves use their own provider, ideally their institution's (see [Authentication provider](../auth-install.md)). The lab's setup, described here, can serve as an example for teams that run their own.
+* **Not a service for others.** Teams that host our software themselves use their own provider, ideally their institution's (see [Authentication provider](../../auth-install.md)). The lab's setup, described here, can serve as an example for teams that run their own.
 
 ## More realms
 

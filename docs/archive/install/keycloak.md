@@ -36,7 +36,7 @@ The two hostnames: `auth.societal-analytics.nl` (public: `/realms/`, `/resources
 
 ## 1. Prerequisites
 
-**The VM.** On a university VM, first follow [Installation: university VMs](vm.md): secure SSH logins, open ports 80 and 443 in the VM firewall, and install Docker. Read the warning there about Docker bypassing the VM firewall.
+**The VM.** On a university VM, first follow [Installation: university VMs](../../vm.md): secure SSH logins, open ports 80 and 443 in the VM firewall, and install Docker. Read the warning there about Docker bypassing the VM firewall.
 
 **DNS.** Create two **A records** pointing to the VM's IPv4 address, `auth` and the admin hostname. Don't create AAAA (IPv6) records: with IPv4 only, the IP restriction of the admin hostname only needs IPv4 ranges, and Let's Encrypt can't fail on a stale IPv6 address. If your DNS provider can proxy traffic (e.g. Cloudflare), use "DNS only", otherwise Caddy can't see visitors' IP addresses. Check from your own machine:
 
@@ -322,7 +322,7 @@ In all realms:
 
 * **2FA:** OTP (authenticator app), passkeys or security keys, and recovery codes count as a second factor. Users can also sign in with only a passkey ("Sign in with Passkey" on the login page), which counts as 2FA, also where 2FA is mandatory. With mandatory 2FA, users without a second factor are asked to set up OTP when they log in. After setting up OTP, users set up recovery codes. In `idp`, Google and GitHub replace only the password: the second factor is asked after them, in the same way. All login paths, and why: [How users log in](../servers/keycloak.md#how-users-log-in).
 * **Forgot password, or first time** (`lab`, `idp`): after the email link (valid 30 minutes), users with a second factor enter it, then choose a new password, and are logged in. The email link never replaces the second factor. In `lab`, users without a second factor set one up in the same go.
-* **The `amr` claim** in tokens contains `mfa` when a second factor was used, and `pwd` for a password (for our software: `OIDC_MFA_CLAIM=amr:mfa`, see the [Authentication standard](../auth.md)).
+* **The `amr` claim** in tokens contains `mfa` when a second factor was used, and `pwd` for a password (for our software: `OIDC_MFA_CLAIM=amr:mfa`, see the [Authentication standard](../../auth.md)).
 * **Passwords:** at least 10 characters, with an uppercase letter and a digit, not equal to the username or email.
 * **Login action timeout** 30 minutes for each page of the login (e.g. setting up 2FA, saving the recovery codes), brute force detection, and login and admin events kept for 90 days.
 * **Sessions** at Keycloak last 30 minutes in `idp` (applications keep their own sessions), and up to 8 hours in `master`. In `lab`, a session ends after 2 hours without activity, and lasts at most 10 hours: the lab portal on the lab server checks it regularly, so this is how long members stay signed in to the lab's services ([Lab server](../servers/lab.md#signing-out-and-inactivity)). In `lab`, **Remember me** on the login page keeps users logged in on that device for up to 30 days (7 days idle).
@@ -418,7 +418,7 @@ Each AmCAT or AnnoTinder server of the lab (and anything else that logs in with 
 2. **Client authentication:** on. **Authentication flow:** only **Standard flow**. **Next.**
 3. **Valid redirect URIs:** the exact callback URL of the server (see its documentation), e.g. `https://amcat.example.org/api/auth/callback`: `https://`, no wildcards (`*`). **Valid post logout redirect URIs:** `+` (the same as the redirect URIs). Don't leave this field empty: Keycloak refuses an empty value. **Save.**
 4. **Credentials** tab: copy the **Client secret**.
-5. Configure the server: `OIDC_HOST=https://auth.societal-analytics.nl/realms/idp`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_MFA_CLAIM=amr:mfa` (see the [Authentication standard](../auth.md#configuration)). Our software requests the scopes `openid email`.
+5. Configure the server: `OIDC_HOST=https://auth.societal-analytics.nl/realms/idp`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and `OIDC_MFA_CLAIM=amr:mfa` (see the [Authentication standard](../../auth.md#configuration)). Our software requests the scopes `openid email`.
 
 A new client gets the scopes `email` (address and whether it is verified), `amr` (2FA), and the basics (`sub`, `auth_time`), and `profile` (the name) only when it asks for it; no roles. Users see that on the consent screen: "This app will be able to: see your email address; see whether you signed in with two-factor authentication", and "see your name" for a service that requests `profile`. Other services (not ours) work the same way: they often request `openid profile email`.
 
@@ -426,7 +426,7 @@ The client policy `deployment-clients` (in `realms/idp-realm.json`) applies to e
 
 * **Consent** is turned on automatically: users see the client's name before it gets their name and email address.
 * **PKCE** (S256) is turned on automatically, and required at every login: a login request without PKCE is refused (our software always uses it).
-* **Redirect URIs** with `http://`, wildcards or other unsafe forms are refused, with "Invalid Redirect Uri". Local development doesn't need a client: our software has a [development mode](../auth.md#development-mode).
+* **Redirect URIs** with `http://`, wildcards or other unsafe forms are refused, with "Invalid Redirect Uri". Local development doesn't need a client: our software has a [development mode](../../auth.md#development-mode).
 
 Tested on a test installation: a client created step by step as above gets consent and PKCE; a wildcard redirect URI is refused; a login without PKCE is refused, with PKCE it shows the consent screen and gives tokens. Keycloak's own clients (e.g. the account console, which is public) are not affected.
 
@@ -620,7 +620,7 @@ Keycloak reads its hostnames from `.env` (`KC_HOSTNAME`, `KC_HOSTNAME_ADMIN`), a
     sudo docker compose restart keycloak
     ```
 
-* **Every app that uses Keycloak** has a new issuer URL (`https://<hostname>/realms/<realm>`): update it everywhere, e.g. the lab login on the lab server. Our own software recognizes users by issuer and user ID, so a new issuer makes existing users look new: check before moving a realm that our servers use ([Migration guide](../auth-migration.md)).
+* **Every app that uses Keycloak** has a new issuer URL (`https://<hostname>/realms/<realm>`): update it everywhere, e.g. the lab login on the lab server. Our own software recognizes users by issuer and user ID, so a new issuer makes existing users look new: check before moving a realm that our servers use ([Migration guide](../../auth-migration.md)).
 * **Google and GitHub** (`idp`): update the redirect URI in both developer consoles (`https://<hostname>/realms/idp/broker/<google or github>/endpoint`).
 * **Passkeys** only work on the domain they were created on: users sign in with their password and second factor, and register their passkey again.
 * **Everyone signs in again,** and links in emails sent before the change no longer work.

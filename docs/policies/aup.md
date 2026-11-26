@@ -5,7 +5,7 @@
 
 **Version:** draft, November 2026
 
-This acceptable use policy (AUP) applies to everyone who uses a service operated by the Societal Analytics Lab: the lab's AmCAT and AnnoTinder servers, Whisper, Ollama, and the lab's login service (see [services covered](./privacy.md#services-covered)). By using these services, you agree to this policy.
+This acceptable use policy (AUP) applies to everyone who uses a service operated by the Societal Analytics Lab: the lab's AmCAT and AnnoTinder servers, Whisper, Ollama, and the lab's login service (see [services covered](privacy.md#services-covered)). By using these services, you agree to this policy.
 
 It does not apply to AmCAT or AnnoTinder servers hosted by other teams. Those teams set their own policies.
 
@@ -34,7 +34,7 @@ The services are provided for research and education. Use them only for these pu
 
 ## Logging and monitoring
 
-To keep the services secure, we log logins and actions (see the [privacy statement](./privacy.md)). These logs are used for security, for investigating incidents, and to enforce this policy.
+To keep the services secure, we log logins and actions (see the [privacy statement](privacy.md)). These logs are used for security, for investigating incidents, and to enforce this policy.
 
 ## Consequences
 

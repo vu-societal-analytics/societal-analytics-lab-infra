@@ -4,11 +4,10 @@
 # Read it before running this script. Safe to run more than once.
 #
 # Step 1, as root on the new VM (creates your admin user, the firewall rules, updates, Docker):
-#   bash setup-vm.sh <username> [--web] [--ssh-from <range>,<range>] [--caddy]
+#   bash setup-vm.sh <username> [--web] [--ssh-from <range>,<range>]
 #     --web       also allow incoming HTTP and HTTPS (ports 80 and 443) in the VM firewall
 #     --ssh-from  allow SSH only from these address ranges (e.g. the VU network), instead of from
 #                 anywhere; refuses if a current SSH connection comes from outside them
-#     --caddy     also install Caddy on the VM itself (for service VMs; not for the Keycloak VM)
 #
 # Step 2, after checking in a second terminal that you can log in as <username> and use sudo:
 #   sudo bash setup-vm.sh --harden-ssh
@@ -101,15 +100,13 @@ if [ "${1:-}" = "--harden-ssh" ]; then
 fi
 
 user="${1:-}"
-[ -n "$user" ] && [ "${user#-}" = "$user" ] || die "usage: bash setup-vm.sh <username> [--web] [--ssh-from <range>,<range>] [--caddy]   (then: sudo bash setup-vm.sh --harden-ssh)"
+[ -n "$user" ] && [ "${user#-}" = "$user" ] || die "usage: bash setup-vm.sh <username> [--web] [--ssh-from <range>,<range>]   (then: sudo bash setup-vm.sh --harden-ssh)"
 shift
 web=no
-caddy=no
 ssh_from=""
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--web) web=yes ;;
-	--caddy) caddy=yes ;;
 	--ssh-from) [ -n "${2:-}" ] || die "--ssh-from needs address ranges, e.g. --ssh-from 192.0.2.0/24,198.51.100.0/24"; ssh_from="$2"; shift ;;
 	*) die "unknown option: $1" ;;
 	esac
@@ -177,20 +174,7 @@ else
 fi
 docker compose version
 
-if [ "$caddy" = yes ]; then
-	step "5. Caddy (from Caddy's own repository)"
-	if command -v caddy >/dev/null; then
-		echo "Caddy is installed: $(caddy version)"
-	else
-		curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/gpg.key | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-		curl -1sLf https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt > /etc/apt/sources.list.d/caddy-stable.list
-		chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
-		apt-get update -q
-		apt-get install -y -q caddy
-	fi
-fi
-
-step "6. The system account sal (owns the apps in /opt)"
+step "5. The system account sal (owns the apps in /opt)"
 if id sal >/dev/null 2>&1; then
 	echo "sal exists"
 else

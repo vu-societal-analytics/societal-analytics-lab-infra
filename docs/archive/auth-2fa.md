@@ -1,11 +1,11 @@
 # Two-factor authentication: where should it live?
 
 !!! info "Evaluation"
-    This page is the evaluation behind our choice to keep 2FA at the OIDC provider (November 2026). The decision and its reasons are on the [Decisions](./decisions.md#2fa-lives-at-the-oidc-provider) page. Where this page mentions our shared provider for other teams: that was dropped later. Teams without a provider with 2FA can now use [weaker security settings](./auth.md#weaker-security-teaching-and-low-sensitivity-servers) for teaching servers.
+    This page is the evaluation behind our choice to keep 2FA at the OIDC provider (November 2026). The decision and its reasons are on the [Decisions](decisions.md#2fa-lives-at-the-oidc-provider) page. Where this page mentions our shared provider for other teams: that was dropped later. Teams without a provider with 2FA can now use [weaker security settings](../auth.md#weaker-security-teaching-and-low-sensitivity-servers) for teaching servers.
 
-All our software requires a second factor (2FA, MFA) for sensitive actions (see the [Authentication standard](./auth.md)). This page discusses **which component provides that second factor**: the OIDC provider (option A), or a component of our own (option B). It explains the relevant concepts, lists the pros and cons of both options, and ends with a recommendation.
+All our software requires a second factor (2FA, MFA) for sensitive actions (see the [Authentication standard](../auth.md)). This page discusses **which component provides that second factor**: the OIDC provider (option A), or a component of our own (option B). It explains the relevant concepts, lists the pros and cons of both options, and ends with a recommendation.
 
-This page is about AmCAT and AnnoTinder, including when other teams host them. The lab's own login service is described on the [Keycloak VM](./servers/keycloak.md) page.
+This page is about AmCAT and AnnoTinder, including when other teams host them. The lab's own login service is described on the [Keycloak VM](servers/keycloak.md) page.
 
 ## Concepts
 
@@ -47,7 +47,7 @@ An OIDC provider returns an ID token with claims about the login. The ones that 
 | Threat | Description |
 | --- | --- |
 | **T1. Stolen password or inbox** | The most common attack. Any real 2FA stops it. |
-| **T2. Email reassignment** | Old email addresses get reassigned, especially institutional ones. Our [safeguards](./auth.md#safeguards-against-email-reassignment) exist for this. |
+| **T2. Email reassignment** | Old email addresses get reassigned, especially institutional ones. Our [safeguards](../auth.md#safeguards-against-email-reassignment) exist for this. |
 | **T3. Compromised or misconfigured provider** | A breached provider, a careless admin, or weak account recovery at the provider. The provider can then issue valid tokens for any user. |
 | **T4. Phishing** | A fake login page captures credentials and one-time codes. |
 | **T5. Lockout** | A user loses their second factor. Not an attack, but recovery procedures are a common attack surface themselves. |
@@ -66,7 +66,7 @@ An OIDC provider returns an ID token with claims about the login. The ones that 
 | **No 2FA code in our software.** Enrollment, factor storage, phishing-resistance and rate limiting are the provider's job. | **Teams need a provider with 2FA.** Free and simple providers often lack it. Our shared provider covers servers without sensitive data. |
 | **Recovery is handled by the provider.** With an institutional provider, the institution's helpdesk handles lost factors. | **The provider is a single point of trust (T3).** A compromised or misconfigured provider can issue tokens that claim 2FA was used. |
 | **One login prompt.** Users whose institution already requires 2FA are not asked again. | **We can't see the quality of the 2FA.** The token says 2FA was used, not whether it was a passkey or SMS, or how the factor can be recovered. |
-| **Works with our existing OIDC code.** | **Changing providers needs a [migration](./auth-migration.md).** Account linking makes this manageable. |
+| **Works with our existing OIDC code.** | **Changing providers needs a [migration](../auth-migration.md).** Account linking makes this manageable. |
 
 ## Option B: our own second factor (local broker)
 

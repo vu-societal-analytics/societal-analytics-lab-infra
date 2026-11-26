@@ -1,0 +1,87 @@
+# PostgreSQL on the database server, for the apps on other servers (a draft: not yet in use).
+# How we run it: https://vu-societal-analytics.github.io/societal-analytics-lab-infra/apps/#postgresql
+# Settings and secrets in .env (from .env.example).
+name: postgres
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: 10m, max-file: "3" }
+
+services:
+  db:
+    image: postgres:18.7-alpine
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      # Only on the server's internal address, where the other servers connect: never on all
+      # addresses (Docker bypasses the firewall). TODO: TLS, and pg_hba.conf limited to those servers
+      - "${BIND_ADDRESS:?set BIND_ADDRESS (the internal address of this server) in .env}:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    shm_size: 256m
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 10
+
+  db-backup:
+    # Every database dumped at the start and every day at 02:00 (UTC) into ./backups, kept 7 days
+    image: postgres:18.7-alpine
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/db-backup.sh"]
+    configs:
+      - source: db-backup
+        target: /db-backup.sh
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_TIME: "02:00"
+      KEEP_DAYS: 7
+    volumes:
+      - ./backups:/backups
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  db-data:
+
+configs:
+  db-backup:
+    # Like the backup service of an app's own database (see the Docker Compose page), for every
+    # database on this server, plus the roles (pg_dumpall --globals-only). $$ is a literal $.
+    content: |
+      set -eu
+      umask 077
+      time="$${BACKUP_TIME:-02:00}"; keep="$${KEEP_DAYS:-7}"
+      hours="$${time%%:*}"; minutes="$${time##*:}"
+      at=$$(( $${hours#0} * 3600 + $${minutes#0} * 60 ))
+
+      dump() {
+      	day=$$(date -u +%Y%m%d)
+      	pg_dumpall --globals-only > "/backups/globals-$$day.sql"
+      	for db in $$(psql -Atc "SELECT datname FROM pg_database WHERE NOT datistemplate AND datname <> 'postgres'"); do
+      		file="/backups/$$db-$$day.dump"
+      		if pg_dump --format=custom "$$db" > "$$file.partial"; then
+      			mv "$$file.partial" "$$file"; echo "$$(date -u -Iseconds) dump written: $$file"
+      		else
+      			rm -f "$$file.partial"; echo "$$(date -u -Iseconds) ERROR: pg_dump $$db failed" >&2
+      		fi
+      	done
+      	find /backups -type f \( -name '*.dump' -o -name 'globals-*.sql' \) -mtime +"$$((keep - 1))" -delete
+      }
+
+      until pg_isready -q; do sleep 5; done
+      dump
+      while true; do
+      	now=$$(date -u +%s); next=$$(( now - now % 86400 + at ))
+      	[ "$$next" -gt "$$now" ] || next=$$(( next + 86400 ))
+      	sleep $$(( next - now )); dump
+      done

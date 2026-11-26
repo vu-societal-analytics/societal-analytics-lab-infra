@@ -39,7 +39,7 @@ A realm in Keycloak is a separate login: its own users, apps, settings and admin
 | Realm | For | Login | Who can join |
 | --- | --- | --- | --- |
 | **master** | Administering Keycloak itself | Password and a mandatory second factor | Only the administrators |
-| **lab** | The lab's own infrastructure: the [lab login](./lab.md) on the lab server | Password and a mandatory second factor | Lab members and invited collaborators, added by the lab's admins |
+| **lab** | The lab's own infrastructure: the [lab portal](./lab.md) on the lab server | Password and a mandatory second factor | Lab members and invited collaborators, added by the lab's admins (and approved as members in the lab portal) |
 | **idp** | The lab's servers for researchers, such as AmCAT and AnnoTinder | Password, Google or GitHub; second factor optional, but required by our servers for sensitive actions | Anyone (an account gives no access by itself) |
 
 * **master** has no email and no external logins, so admin access never depends on an inbox or someone's Google account. Lost access is recovered via the server itself.

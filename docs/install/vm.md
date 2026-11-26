@@ -224,7 +224,7 @@ Run Docker with `sudo`, and don't add users to the `docker` group: it is effecti
 
 ## 6. Installing apps
 
-Install apps as described in [Apps on our servers](apps.md): the system account `sal`, every app in `/opt/<app>`, and where its data goes. Install Caddy from its official apt repository, as on the lab server ([Caddy](lab-server.md#caddy)).
+Install apps as described in [Apps on our servers](apps.md): the system account `sal`, every app in `/opt/<app>`, and where its data goes. Install Caddy from [its official apt repository](https://caddyserver.com/docs/install), not Ubuntu's own `caddy` package, which is too old.
 
 ## Persistence
 

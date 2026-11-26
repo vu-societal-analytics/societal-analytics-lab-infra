@@ -1,6 +1,6 @@
 # Lab server
 
-A physical server on VU premises that hosts the lab's services for its members, such as transcription (Whisper) and language models (Ollama). Every service has an address under `lab.societal-analytics.nl`, and `lab.societal-analytics.nl` itself is an overview of the services. Which services run here: [Hosted services](./services.md).
+A physical server on VU premises that hosts the lab's services for its members, such as transcription (Whisper) and language models (Ollama). Every service has an address under `lab.societal-analytics.nl`, and `lab.societal-analytics.nl` itself is the lab portal: the login, an overview of the services, and lab membership. Which services run here: [Hosted services](./services.md).
 
 ## Map
 
@@ -11,28 +11,40 @@ flowchart LR
     subgraph Server ["Lab server"]
         direction LR
         Caddy["Caddy"]
-        Login["Lab login (oauth2-proxy)<br/>sets 🍪 for *.lab"]
-        Overview["lab.societal-analytics.nl<br/>overview page"]
+        Portal["Lab portal<br/>lab.societal-analytics.nl<br/>login, services, membership<br/>sets 🍪 for the lab zone"]
         Walled["*.lab.societal-analytics.nl<br/>no own login"]
         Own["*.lab.societal-analytics.nl<br/>own login"]
-        Caddy -->|no 🍪| Login
-        Caddy -->|🍪| Overview
-        Caddy -->|🍪| Walled
+        Caddy --> Portal
+        Caddy -->|"🍪 allowed? (asks the portal)"| Walled
         Caddy --> Own
     end
 
     KC["Keycloak<br/>🔑 lab realm"]
 
     Member -->|HTTPS| Caddy
-    Login -.->|🔑| KC
+    Portal -.->|🔑| KC
     Own -.->|🔑| KC
 ```
 
 * **Caddy** is the only thing reachable from outside. It handles HTTPS (certificates from Let's Encrypt), and sends every request to the right service.
-* **The lab login** (the AuthWall) protects services without a login of their own, and the overview page. Visitors without its login cookie (🍪) are sent to the lab's login service (the `lab` realm of [Keycloak](./keycloak.md)), so only lab members get in: an account with a password and a mandatory second factor. After that login, the lab login sets the cookie for all of `*.lab`. A service can be restricted further, to one group of members.
+* **The lab portal** (`lab.societal-analytics.nl`) is the lab login. Members sign in there with their account in the `lab` realm of [Keycloak](./keycloak.md) (a password and a second factor), and see the services they can use. After that login, the portal's cookie (🍪) works for every address under `lab.`.
+* **Services without their own login** sit behind the portal: for every request, Caddy asks the portal whether this person may use the service. Visitors who aren't signed in are sent to the login first.
+* **Lab membership:** a Keycloak account alone isn't enough. People request membership in the portal; a lab admin approves it there, and gets an email about new requests. Admins can also add and remove members directly.
 * **Services with their own login** (e.g. a chat interface for the language models) are reached directly through Caddy, and log users in through Keycloak's `lab` realm themselves.
-* **The rule:** every service under `lab.` either sits behind the lab login, or has its own login through Keycloak. Never a separate password or token, so lab members have one account, with a second factor, for everything.
+* **The rule:** every service under `lab.` either sits behind the portal, or has its own login through Keycloak. Never a separate password or token, so lab members have one account, with a second factor, for everything. (A service can let scripts use its own API keys on its API paths; see [Adding a service](../install/lab-server.md#2-adding-a-service).)
 * **The services** listen only on the server itself (`127.0.0.1`), so they can't be reached around Caddy. Each one lives in its own directory in `/opt`, owned by a system account without a login, run with Docker Compose, with its files and database dumps backed up every night, and data with a short retention deleted after a set time ([Apps on our servers](../install/apps.md)).
+
+### Who may use what
+
+Set per service in `services.yml` on the server, which lab admins edit over SSH (not in the portal, so a stolen browser session can't change it):
+
+| Access | Who |
+| --- | --- |
+| members | Lab members and lab admins |
+| admins | Lab admins |
+| public | Anyone: the service has its own login, or is public |
+
+A service can also require that the login used a second factor (e.g. for services with sensitive data). Lab admins are listed in `groups.yml` on the server, and always need a recent login with a second factor for changes on the admin page.
 
 ## The lab zone: everything under `lab.`
 
@@ -47,11 +59,11 @@ The lab's website (`societal-analytics.nl`, hosted on GitHub Pages) is outside t
 
 ## Signing out, and inactivity
 
-* **Sign out:** the **Sign out** button on the overview page, or `/oauth2/sign_out` on any service behind the lab login. It ends the login for all services and the session at Keycloak.
-* **Inactivity:** members who don't use any service behind the lab login for 2 hours have to log in again. Active members stay signed in: the lab login checks the session with Keycloak every 10 minutes while they work, and a long request (e.g. a large upload) is never cut off.
-* **Remember me:** members who tick it when they log in stay signed in on that device for up to 7 days without activity.
-* **A removed member** (or one removed from a group) loses access within 10 minutes. Everyone can be signed out at once, e.g. after a stolen laptop.
+* **Sign out:** **Sign out** on the portal. It ends the login for all services and the session at Keycloak. Signing out in Keycloak (or an admin ending the session there) also ends the portal login.
+* **Inactivity:** members who don't use the lab services for 2 hours (Keycloak's idle time for the `lab` realm) have to log in again, and everyone after at most 10 hours. Active members stay signed in: the portal checks the session with Keycloak every 10 minutes while they work, and a long request (e.g. a large upload) is never cut off.
+* **Remember me:** members who tick it when they log in stay signed in on that device for up to 30 days, as long as they use it at least once a week.
+* **A removed member** loses access immediately when removed in the portal, and within 10 minutes when their Keycloak account is disabled.
 
 ## Setup
 
-How the server, the lab login and new services are set up: [Installation: lab server](../install/lab-server.md).
+How the server, the lab portal and new services are set up: [Installation: lab server](../install/lab-server.md).

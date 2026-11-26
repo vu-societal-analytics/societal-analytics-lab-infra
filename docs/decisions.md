@@ -51,7 +51,7 @@ Last reviewed: November 2026.
 **What the lab needs:**
 
 * **Our [Authentication standard](./auth.md):** verified email (`email_verified`), a 2FA signal (`amr`), and step-up (`max_age`, `auth_time`).
-* **A login for services without their own** (the lab login on the lab server), through forward auth.
+* **A login for services without their own** (the lab portal on the lab server), as an OIDC client.
 * **External collaborators:** researchers from other institutions, including abroad, and guests without an institutional account.
 * **Little maintenance,** and a clear route for account recovery: lab admins can reset a member's second factor.
 
@@ -196,22 +196,39 @@ The cost: lab members have two accounts. `lab` as a login option of `idp` solves
 
 ### All lab services under `lab.`, with one login cookie for the zone
 
-**Chosen:** every service the lab runs for its members gets an address under `lab.societal-analytics.nl` (e.g. `whisper.lab.societal-analytics.nl`), with or without its own login, and `lab.societal-analytics.nl` is the overview page. Services without their own login sit behind oauth2-proxy with Caddy's `forward_auth`, against the `lab` realm. oauth2-proxy sets **one login cookie for the zone** (`.lab.societal-analytics.nl`), and every login comes back to one fixed address (`lab.societal-analytics.nl/oauth2/callback`). Signing out ends the login for all services and the Keycloak session (oauth2-proxy's backend logout). oauth2-proxy checks the session with Keycloak every 10 minutes, so inactive users (2 hours, Keycloak's idle time) and removed members are signed out ([Lab server](./servers/lab.md)).
+**Chosen:** every service the lab runs for its members gets an address under `lab.societal-analytics.nl` (e.g. `whisper.lab.societal-analytics.nl`), with or without its own login, and `lab.societal-analytics.nl` is the lab portal. Services without their own login sit behind the portal, through Caddy's `forward_auth`. The portal sets **one login cookie for the zone** (`lab.societal-analytics.nl` and everything under it), and every login comes back to one fixed address (`lab.societal-analytics.nl/callback`). Signing out ends the login for all services and the Keycloak session ([Lab server](./servers/lab.md)).
 
-**Why:** users need one login, and one sign-out that ends everything. oauth2-proxy can't do that with a cookie per service: a browser only lets a site clear its own cookies, and oauth2-proxy doesn't support Keycloak's back-channel logout. A shared cookie is the common way to use oauth2-proxy, but a cookie for the whole domain would also go to the lab's website, which is hosted by GitHub Pages. A zone of its own keeps the cookie within the lab's own services on this server, which could reach each other anyway. The zone also makes the rule visible: everything under `lab.` is a lab service.
+**Why:** users need one login, and one sign-out that ends everything; with a cookie per service, a browser only lets a site clear its own cookies. A cookie for the whole domain would also go to the lab's website, which is hosted by GitHub Pages. A zone of its own keeps the cookie within the lab's own services on this server, which could reach each other anyway. The zone also makes the rule visible: everything under `lab.` is a lab service.
 
 **The condition:** only services the lab runs on its own servers may be under `lab.`. A site hosted by someone else would receive a login that works for all services behind the lab login (the cookie isn't bound to one service).
 
-**oauth2-proxy in a Docker network of its own,** with its port published on `127.0.0.1` only, and only the gateway of that network trusted for `X-Forwarded-*` headers. It can't reach the apps on the server's localhost, and no other container can reach it.
-
 **Dropped:**
 
-* **A cookie per service:** signing out of one service would leave the others logged in until their next check with Keycloak. (oauth2-proxy also doesn't bind a cookie to a service, so it protected less than it seemed.)
+* **A cookie per service:** signing out of one service would leave the others logged in.
 * **One cookie for the whole domain:** it would be sent to the website on GitHub Pages.
 * **Services under one address, by path** (`lab.societal-analytics.nl/whisper`): all services would share one origin, so their cookies could clash, and a bug in one could read the others' pages; many apps also can't run under a sub-path.
 * **A wildcard redirect URI** (`https://*.lab.societal-analytics.nl/...`): Keycloak doesn't allow a wildcard in the host name (tested). One fixed callback replaces it.
-* **`network_mode: host` for oauth2-proxy** (simpler, but a compromised oauth2-proxy could reach every app on the server's localhost).
-* **A CMS for the website on the lab server:** the public website stays on GitHub Pages (quick updates, nothing to maintain); the overview page of lab services is a static page behind the lab login.
+* **A CMS for the website on the lab server:** the public website stays on GitHub Pages (quick updates, nothing to maintain).
+
+### The lab portal: our own login for the lab zone, instead of oauth2-proxy
+
+**Chosen:** a small app of our own, the [lab portal](https://github.com/vu-societal-analytics/deploy-lab-portal) (Hono, with Caddy, in one compose project), is the lab login. It is an ordinary OIDC client of the `lab` realm, like AmCAT and AnnoTinder, and:
+
+* decides for Caddy who may use which service (forward auth): lab members, lab admins, or anyone, and per service whether a second factor is required;
+* lists the services, takes membership requests, and lets lab admins approve them (with email to the admins: at most one per hour, and a daily reminder while requests are pending);
+* generates Caddy's configuration from `services.yml`.
+
+**Who may do what lives in files on the server** (`services.yml`, `groups.yml` with the admins), changed over SSH. The app itself can only add and remove lab members: someone who takes over an admin's browser session can't open a service to the world, or make someone an admin. Admin changes need a login with a second factor from the last 10 minutes.
+
+**Why not oauth2-proxy (the earlier setup):** membership requests and an overview of services needed an app anyway, and that app already has the login. oauth2-proxy also has no back-channel logout (signing out in Keycloak didn't end the lab login until its next check), no per-service 2FA requirement, and needed a Caddy snippet per kind of access. The portal does all of it with the standard OIDC flow (PKCE, state, nonce), server-side sessions (only a random token in the cookie), back-channel logout, and a check with Keycloak every 10 minutes.
+
+**Containers:** the portal runs in a Docker network of its own (read-only, no privileges), with its port published on `127.0.0.1` only: it can't reach the apps on the server's localhost. Caddy runs on the server's network (`network_mode: host`), as it needs to reach those apps.
+
+**Dropped:**
+
+* **Membership in Keycloak** (a group or role in the `lab` realm, managed by the portal): the portal would need admin rights in Keycloak. The portal's own list needs no rights there.
+* **Access rules in the portal's database** (editable on the admin page): see above; the files on the server are versioned by their admins, and need SSH.
+* **oauth2-proxy in front of the portal:** a second login component, with nothing it adds.
 
 ## Later
 

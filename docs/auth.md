@@ -44,7 +44,8 @@ By default, the provider must meet all three requirements. The first two can be 
 | `OIDC_CLIENT_ID` | yes | Client ID registered at the provider. |
 | `OIDC_CLIENT_SECRET` | yes | Client secret registered at the provider. |
 | `OIDC_MFA_CLAIM` | no | Which claim counts as 2FA: `amr:mfa` (default) or `acr:<value>`, e.g. `acr:http://test.surfconext.nl/assurance/loa2` for SURFconext. |
-| `AUTH_STEP_UP_MAX_AGE` | no | Maximum age in seconds of the last 2FA login for sensitive actions. Default: 600. |
+| `AUTH_SESSION_IDLE`, `AUTH_SESSION_MAX` | no | The application's own session: seconds without activity, and seconds in total, before the user signs in again (see [Sessions and signing out](#sessions-and-signing-out)). Default: 1800 and 86400 (30 minutes, 24 hours). |
+| `AUTH_STEP_UP_MAX_AGE`, `AUTH_STEP_UP_IDLE` | no | Sensitive actions: the maximum age in seconds of the last 2FA login, and the seconds since that login or the last sensitive action (see [Two-factor authentication](#two-factor-authentication-2fa)). Default: 3600 and 900 (1 hour, 15 minutes). |
 | `OIDC_PREVIOUS_HOST`, `OIDC_PREVIOUS_CLIENT_ID`, `OIDC_PREVIOUS_CLIENT_SECRET`, `OIDC_PREVIOUS_MFA_CLAIM` | no | The previous OIDC provider, only during a [migration](auth-migration.md#account-linking). |
 | `OIDC_PREVIOUS_UNTIL` | no | Date after which the previous provider is no longer accepted. |
 | `AUTH_DEV_MODE` | no | Enables [development mode](#development-mode). Refused unless the server only listens on localhost. |
@@ -53,10 +54,10 @@ By default, the provider must meet all three requirements. The first two can be 
 
 ## Two-factor authentication (2FA)
 
-For sensitive actions (e.g. creating API keys, changing roles) our servers require a 2FA login that is at most `AUTH_STEP_UP_MAX_AGE` seconds old (step-up authentication).
+For sensitive actions (e.g. creating API keys, changing roles) our servers require a recent 2FA login (step-up authentication), in a window like GitHub's "sudo mode": the login is at most `AUTH_STEP_UP_MAX_AGE` old (1 hour), and at most `AUTH_STEP_UP_IDLE` (15 minutes) has passed since that login or the last sensitive action. Each sensitive action renews that 15 minutes, so a batch of admin work needs one login, not one per change. ([OWASP's verification standard](https://owasp.org/www-project-application-security-verification-standard/) requires a recent login or re-authentication before sensitive actions, without prescribing a window; 15 minutes is OWASP's idle timeout for high-value applications, at the strict end.)
 
-1. The server checks `OIDC_MFA_CLAIM` and `auth_time` in the ID token.
-2. If the claim is missing or too old, the server redirects the user to the OIDC provider with `max_age`.
+1. The server checks `OIDC_MFA_CLAIM` and `auth_time` in the ID token of the session's login, and when the last sensitive action was.
+2. If the claim is missing or the window has passed, the server sends the user to the OIDC provider for a new login, with `max_age=0` and `prompt=login` (Keycloak skips `max_age=0` when the last login was within the same second; `prompt=login` always asks).
 3. The server checks the new ID token itself, because providers do not always enforce what was requested.
 
 With `AUTH_INSECURE_DISABLE_2FA`, steps 1 to 3 only check `auth_time`: sensitive actions still need a recent login, but not a second factor.
@@ -125,7 +126,7 @@ All software developed by the Societal Analytics Lab follows these rules, to ens
 | Server-side OIDC flow | The server initiates and completes the OIDC flow with the trusted provider (`OIDC_HOST`), and sets a signed, http-only session cookie. |
 | Scopes | The server requests the scopes `openid email`, nothing more. It uses `sub`, `email`, `email_verified`, the 2FA signal and `auth_time`, and no name, so users aren't asked to share more than needed. |
 | One session per application | When AmCAT and AnnoTinder are hosted together, each application has its own session. They can share one OIDC client (the same client ID and client secret), so that users consent once per host (see [One client per host](https://github.com/vu-societal-analytics/societal-analytics-lab-infra/blob/main/docs/archive/auth-providers.md#one-client-per-host)). The second login completes without user interaction, while the user is still signed in at the provider. |
-| Own session, sign-out | The application's session is independent of the provider's session: 30 minutes idle, 12 hours at most, configurable. Signing out ends it and the provider's session (see [Sessions and signing out](#sessions-and-signing-out)). |
+| Own session, sign-out | The application's session is independent of the provider's session: 30 minutes idle, 24 hours at most, configurable. Signing out ends it and the provider's session (see [Sessions and signing out](#sessions-and-signing-out)). |
 | Authorization on the server | The server decides what users may do, not the OIDC provider (see [Authorization](#authorization)). |
 | API keys for other clients | Other clients (e.g. R or Python) can only access the backend via [API keys](#api-keys). |
 | Email verification | The server checks the `email_verified` claim, unless `AUTH_INSECURE_DISABLE_EMAIL_VERIFICATION` is set (see [Weaker security](#weaker-security-teaching-and-low-sensitivity-servers)). |
@@ -144,7 +145,16 @@ There are three kinds of session, and keeping them apart is what makes signing i
 * **keeps its own session after the login** (our software: the server uses OIDC once to sign the user in, and needs no refresh token), or
 * **requests `offline_access`**: a refresh token that is independent of the provider's session (it survives a sign-out elsewhere). Tools that keep users signed in with refresh tokens (e.g. oauth2-proxy, by adding `offline_access` to its scopes) do it this way. In our Keycloak, a client gets it only when it asks, with the session limits of its client settings.
 
-**How long a session lasts:** an idle timeout and an absolute timeout ([OWASP, Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)), with the numbers of [NIST SP 800-63B](https://pages.nist.gov/800-63-3/sp800-63b.html) for logins with a second factor: **30 minutes without activity, 12 hours at most**. Both are settings (`SESSION_IDLE`, `SESSION_MAX`, in seconds). An application whose use requires more may set more, and documents why: e.g. a notebook server that computes for hours while the user does nothing.
+**How long a session lasts:** an idle timeout and an absolute timeout ([OWASP, Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)), within the limits of [NIST SP 800-63B-4](https://pages.nist.gov/800-63-4/sp800-63b/session) for logins with a second factor (at most 1 hour of inactivity, at most 24 hours in total):
+
+| Level | Without activity | In total | Settings |
+| --- | --- | --- | --- |
+| The session | 30 minutes | 24 hours | `AUTH_SESSION_IDLE`, `AUTH_SESSION_MAX` |
+| Sensitive actions (within the session) | 15 minutes since the 2FA login or the last sensitive action | 1 hour since the 2FA login | `AUTH_STEP_UP_IDLE`, `AUTH_STEP_UP_MAX_AGE` |
+
+An application whose use requires more may set more, and documents why: e.g. a notebook server that computes for hours while the user does nothing.
+
+**Continuing a task without a session:** an application may let one specific task continue without a login session, when the login was only needed to start it: e.g. continuing a coding job in AnnoTinder on the device where it was opened. That permission must be limited to that one task (and preferably that device), and grant nothing else. There is no general "remember me": that is what the short sessions are for.
 
 **Signing out** in an application:
 

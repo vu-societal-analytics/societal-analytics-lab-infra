@@ -40,7 +40,7 @@ Both settings show a permanent warning on the admin page. If the server later ge
 * [ ] The provider is approved by your institution for the data on your server.
 * [ ] The provider returns `email_verified: true` for your users.
 * [ ] 2FA is required (or can be requested) for your users, and `OIDC_MFA_CLAIM` matches the provider's signal. (Or, for a teaching server only: `AUTH_INSECURE_DISABLE_2FA=true`.)
-* [ ] Step-up works: performing a sensitive action (e.g. creating an API key) after more than `AUTH_STEP_UP_MAX_AGE` seconds asks for 2FA again.
+* [ ] Step-up works: a sensitive action (e.g. creating an API key) more than `AUTH_STEP_UP_IDLE` after the login or the last sensitive action, or more than `AUTH_STEP_UP_MAX_AGE` after the login, asks for 2FA again.
 * [ ] It is clear who handles account recovery for your users (a helpdesk, or your own admin).
 * [ ] The server admin page shows no [hardening warnings](auth.md#server-hardening-warnings), or only the ones you chose deliberately.
 * [ ] If you are moving from another provider: follow the [Migration guide](auth-migration.md).

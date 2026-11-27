@@ -116,6 +116,8 @@ The web client shows server admins a list of warnings for things that make the s
 
 `AUTH_DEV_MODE` lets developers run our software on their own machine without an OIDC provider, logged in as a local admin. The server refuses to start in development mode unless it only listens on localhost. Development mode is never used for servers that other people use.
 
+An app may let you choose the test user in development mode (for instance with a sign-in form where you type any email address, with or without a second factor), so you can try how it behaves for different users.
+
 ## For developers
 
 All software developed by the Societal Analytics Lab follows these rules, to ensure consistency and security across our software stack.

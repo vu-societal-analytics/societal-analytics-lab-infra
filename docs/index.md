@@ -15,12 +15,12 @@ How the Societal Analytics Lab (VU Amsterdam) hosts its tools: the login service
 * **Every app runs with Docker Compose,** in its own folder `/opt/<app>`, with everything needed to restore it in that folder.
 * **Only HTTPS is public.** Each server has one reverse proxy (Caddy) in front of its apps; apps only listen on the server itself.
 * **One login service,** Keycloak at `auth.societal-analytics.nl`, for everything that needs a login. Apps without a login of their own sit behind the [lab portal](apps.md#lab-portal).
-* **Backups:** every server backs up `/opt` every night, encrypted, with the database dumps the apps make themselves. VU IT's server backups are the last resort.
+* **Backups:** every server backs up `/opt` every night, encrypted, with the database dumps the apps make themselves, and copies that off-site. VU IT's server backups are the last resort.
 * **Everything we make is open source,** our deployments included: [github.com/vu-societal-analytics](https://github.com/vu-societal-analytics). The exception is our Keycloak configuration, the most sensitive part: its repository is private.
 
 ## Open points
 
-* **Backups off the server:** our nightly backups are still stored on each server itself. ==TODO: agree with VU IT where they may go, and which servers VU IT backs up, how often, and for how long.==
+* **Backups off the server:** the off-site copy to Cloudflare R2 is being set up ([deploy-backup](https://github.com/vu-societal-analytics/deploy-backup#off-site-copy)). ==TODO: which servers VU IT backs up, how often, and for how long.==
 * **Monitoring:** ==TODO: the lab's healthchecks.io account, for the backup reports.==
 * **The database server:** ==TODO: what it stores, and how the other servers connect to it (TLS, which servers).==
 * **Whisper and Scriptorium:** ==TODO: their compose files ([Apps](apps.md#whisper)).==

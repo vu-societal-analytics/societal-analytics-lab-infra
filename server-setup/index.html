@@ -1,0 +1,1012 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../servers/">
+      
+      
+        <link rel="next" href="../vm/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Setting up a server - Lab Infrastructure Registry</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#setting-up-a-server" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Lab Infrastructure Registry" class="md-header__button md-logo" aria-label="Lab Infrastructure Registry" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lab Infrastructure Registry
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Setting up a server
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Lab Infrastructure Registry" class="md-nav__button md-logo" aria-label="Lab Infrastructure Registry" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Lab Infrastructure Registry
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../servers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Our servers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setting up a server
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setting up a server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The basics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apps-in-opt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apps in /opt
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A reverse proxy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backups
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    University VMs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Compose
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Software development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Our software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication standard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication provider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../amcat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AmCAT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotinder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AnnoTinder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policies
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Policies
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policies/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy statement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policies/aup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptable use policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The basics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apps-in-opt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Apps in /opt
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A reverse proxy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backups
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="setting-up-a-server">Setting up a server</h1>
+<p>The same on every server, physical or VM. A VM on VU SciCloud is created as on <a href="../vm/">University VMs</a>, which also has a script for the first steps.</p>
+<h2 id="the-basics">The basics</h2>
+<ul>
+<li><strong>Ubuntu LTS,</strong> with automatic security updates (<code>unattended-upgrades</code>).</li>
+<li><strong>A personal admin account per person,</strong> with <code>sudo</code> and SSH keys. No root logins and no passwords over SSH.</li>
+<li><strong>Firewall:</strong> only ports 80 and 443 open to everyone, SSH only from the VU network.</li>
+<li><strong>Docker Engine</strong> with the compose plugin, from <a href="https://docs.docker.com/engine/install/ubuntu/">Docker's own repository</a>. Admins run it with <code>sudo</code>; nobody is in the <code>docker</code> group.</li>
+</ul>
+<details class="note">
+<summary>How we do it</summary>
+<p>On a VM, <a href="../install/setup-vm.sh"><code>setup-vm.sh</code></a> does all of the above (<a href="../vm/">University VMs</a>). By hand, the SSH part is:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">printf</span><span class="w"> </span><span class="s1">'PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\n'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/ssh/sshd_config.d/00-hardening.conf
+sudo<span class="w"> </span>sshd<span class="w"> </span>-t<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>ssh
+</code></pre></div>
+<p>Test a new login in a second terminal before closing the first.</p>
+</details>
+<h2 id="apps-in-opt">Apps in /opt</h2>
+<p>Every app gets a folder <code>/opt/&lt;app&gt;</code> with its <code>compose.yml</code>, its settings (<code>.env</code>) and its data, and runs with Docker Compose (<a href="../docker/">Docker Compose</a>). The folders are owned by a system account, <code>sal</code>, without a login; admins are in its group.</p>
+<p>Once per server, create <code>sal</code> and add each admin to its group:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sudo<span class="w"> </span>useradd<span class="w"> </span>--system<span class="w"> </span>--home-dir<span class="w"> </span>/nonexistent<span class="w"> </span>--no-create-home<span class="w"> </span>--shell<span class="w"> </span>/usr/sbin/nologin<span class="w"> </span>sal
+<span class="gp">$ </span>sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>sal<span class="w"> </span>jane
+<span class="gp">$ </span>id<span class="w"> </span>sal
+<span class="go">uid=999(sal) gid=999(sal) groups=999(sal)</span>
+</code></pre></div>
+<p>For each app, e.g. AnnoTinder:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sudo<span class="w"> </span>mkdir<span class="w"> </span>/opt/annotinder
+<span class="gp">$ </span>sudo<span class="w"> </span>chown<span class="w"> </span>sal:sal<span class="w"> </span>/opt/annotinder<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>chmod<span class="w"> </span><span class="m">750</span><span class="w"> </span>/opt/annotinder
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>/opt/annotinder
+<span class="gp">$ </span>sudo<span class="w"> </span>-u<span class="w"> </span>sal<span class="w"> </span>curl<span class="w"> </span>-fsSLO<span class="w"> </span>https://raw.githubusercontent.com/ccs-amsterdam/annotinder/v0.9.0/compose.yml
+<span class="gp">$ </span>sudo<span class="w"> </span>-u<span class="w"> </span>sal<span class="w"> </span>curl<span class="w"> </span>-fsSL<span class="w"> </span>-o<span class="w"> </span>.env<span class="w"> </span>https://raw.githubusercontent.com/ccs-amsterdam/annotinder/v0.9.0/.env.example
+<span class="gp">$ </span>sudo<span class="w"> </span>-u<span class="w"> </span>sal<span class="w"> </span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>.env
+<span class="gp">$ </span>sudoedit<span class="w"> </span>-u<span class="w"> </span>sal<span class="w"> </span>.env
+<span class="gp">$ </span>ls<span class="w"> </span>-la
+<span class="go">total 20</span>
+<span class="go">drwxr-x--- 2 sal  sal  4096 Nov 26 10:49 .</span>
+<span class="go">drwxr-xr-x 4 root root 4096 Nov 26 10:49 ..</span>
+<span class="go">-rw------- 1 sal  sal  4763 Nov 26 10:49 .env</span>
+<span class="go">-rw-r--r-- 1 sal  sal  5644 Nov 26 10:49 compose.yml</span>
+<span class="gp">$ </span>sudo<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>pull<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<ul>
+<li><strong><code>750</code> on the folder:</strong> admins (the <code>sal</code> group) can look inside, other accounts can't. <strong><code>600</code> on <code>.env</code>:</strong> only <code>sal</code> reads the secrets; admins use <code>sudo</code>.</li>
+<li><strong>Work as <code>sal</code>:</strong> <code>sudo -u sal &lt;command&gt;</code>, and edit with <code>sudoedit -u sal &lt;file&gt;</code> (your own editor, saved as <code>sal</code>). Plain <code>sudo</code> inside <code>/opt/&lt;app&gt;</code> leaves files owned by root.</li>
+<li><strong>Docker with <code>sudo</code>:</strong> <code>sudo docker compose ...</code>, from the app's folder.</li>
+<li><strong>Folders the app mounts</strong> (e.g. <code>data/</code>): create them as <code>sal</code> before the first start (<code>sudo -u sal mkdir data</code>); Docker would create them owned by root.</li>
+</ul>
+<details class="note">
+<summary>Why <code>sal</code>, and not root or your own account?</summary>
+<p>Files owned by a personal account break when that person leaves; files owned by root can only be changed with full root rights. With one system account, every admin works on every app the same way, and nothing in <code>/opt</code> needs root except Docker itself. <code>sal</code> is not in the <code>docker</code> group, since that is effectively root access. More: <a href="../faq/#why-the-sal-account">FAQ</a>.</p>
+</details>
+<p><strong>Updating an app:</strong> change the version in <code>compose.yml</code> (or download the compose file of the new version), then <code>sudo docker compose pull &amp;&amp; sudo docker compose up -d</code>. <strong>Removing one:</strong> <code>sudo docker compose down -v</code> (this deletes its volumes, so its database too), then <code>sudo rm -r /opt/&lt;app&gt;</code>.</p>
+<h2 id="a-reverse-proxy">A reverse proxy</h2>
+<p>Only the reverse proxy (Caddy, with certificates from Let's Encrypt) is reachable from outside; apps listen on <code>127.0.0.1</code> or on internal Docker networks. Where it comes from depends on the server:</p>
+<ul>
+<li><strong>A server with one app</strong> (Keycloak, AmCAT, AnnoTinder): the Caddy that comes with the app's compose file.</li>
+<li><strong>The lab server,</strong> with many apps: the <a href="../apps/#lab-portal">lab portal</a>, which is Caddy plus a small app that adds the lab's login to apps that have none.</li>
+</ul>
+<h2 id="backups">Backups</h2>
+<p>Every server runs the same nightly backup: <a href="https://github.com/vu-societal-analytics/deploy-backup">deploy-backup</a>, in <code>/opt/backup</code>. It backs up all of <code>/opt</code> with restic, encrypted, after checking that every app's database dumps (<code>/opt/&lt;app&gt;/backups</code>) are recent, and reports to healthchecks.io, which emails us when a backup failed or didn't run.</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/vu-societal-analytics/deploy-backup.git<span class="w"> </span>/opt/backup
+sudo<span class="w"> </span>/opt/backup/setup.sh<span class="w"> </span>https://hc-ping.com/&lt;the<span class="w"> </span>server<span class="err">'</span>s<span class="w"> </span>check&gt;
+</code></pre></div>
+<p>Then store the encryption password (<code>sudo cat /etc/restic/password</code>) in the lab's password manager. Checks, restores and settings: the <a href="https://github.com/vu-societal-analytics/deploy-backup#readme">deploy-backup README</a>.</p>
+<p>So everything needed to restore an app is in <code>/opt/&lt;app&gt;</code>: its compose file and <code>.env</code>, its files in <code>data/</code>, and its database dumps in <code>backups/</code>. Databases are dumped by the app itself (<a href="../docker/#a-database-with-daily-dumps">Docker Compose</a>). Every night the new backups are also copied off-site, encrypted, to a Cloudflare R2 bucket per server, which can't be deleted from the server for 30 days (<a href="https://github.com/vu-societal-analytics/deploy-backup#off-site-copy">Off-site copy</a>). The server backups of VU IT are the last resort.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
